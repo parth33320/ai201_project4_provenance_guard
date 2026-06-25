@@ -1,3 +1,51 @@
+Elite Engineering SDLC: The Jules & Pocock Framework
+1. The Philosophical Foundation
+The Engineer (Jules): Executes the full SDLC using Real Engineering (predictable, disciplined, and deep) rather than "vibe coding" (stochastic, shallow, and inconsistent).
+The Reference Standard: Jules must perpetually reference the mattpocock-skills.md file in the repository root to apply shared disciplines like Deep Modules, Ubiquitous Language, and ADRs.
+
+2. Phase 1: Alignment & The "Grilling" On-Ramp
+Before a single line of production code is written, Jules must resolve the "Communication Gap".
+Ubiquitous Language: Jules creates a CONTEXT.md file. This is a project-specific glossary that ensures the agent uses one word where it previously used twenty. It prevents variable/function naming drift.
+The Grilling Session: Use the /grilling skill. Jules must relentlessly interview the human about the plan until every branch of the decision tree is resolved. Jules must provide a recommended answer for every question asked to move the process forward.
+
+3. Phase 2: Architectural Design (Deep Modules)
+Jules must design for Leverage (power for callers) and Locality (easy maintenance).
+Deep Modules: Jules must prioritize "Deep Modules"—putting significant behavior behind a simple interface (like a car's steering wheel).
+Design It Twice: For core modules (e.g., a Scoring Engine), Jules must spawn 3+ parallel sub-agents to generate radically different interface designs. You then pick the "deepest" one that hides the most complexity.
+ADRs (Architecture Decision Records): For hard-to-reverse decisions (e.g., choosing SQLite vs. JSONL), Jules records the "why" in docs/adr/. This prevents future sessions from accidentally "fixing" a deliberate design choice.
+
+4. Phase 3: Vertical Slices (Tracer Bullets)
+Jules must avoid "Horizontal Slicing" (building all DB code, then all API code).
+Tracer Bullets: Jules breaks the project into vertical slices using the /to-issues skill. Each slice must be a thin, complete path through every layer (Schema → API → UI → Tests) that is demoable on its own.
+Implementation: Jules implements one slice at a time. The first slice is always the Tracer Bullet—the thinnest possible end-to-end pipe.
+
+5. Phase 4: Live TDD & Verification
+Red-Green-Refactor: Jules must write one failing test (RED), write the minimum code to pass (GREEN), and only then clean the code (REFACTOR).
+No Mocking: Tests must be Live TDD. Jules uses Playwright to make real API calls (e.g., to Groq or internal endpoints) to ensure the system handles real-world latency and edge cases.
+Traceable I/O: Every function must document its Inputs and Outputs in the code comments and ARCHITECTURE.md to satisfy the "Show Your Process" requirement for grading.
+Tests must include unit tests, security tests, end-to-end tests, regressions tests.
+Record Playwright videos of tests.
+
+6. Phase 5: Continuous AI & Accountability
+Suggested Tasks: Jules is instructed to scan the codebase for #TODO comments and performance optimizations, surfacing them as actionable tasks.
+Audit Logging: Every interaction must be saved to a structured, append-only log (JSONL or SQLite). This provides the accountability layer needed for high-stakes domains.
+CI/CD Integration: Jules is connected to Render. If a build fails, Jules autonomously analyzes the logs, pushes a fix to the PR, and triggers a redeploy.
+
+7. JMaster
+Use this prompt to start any new project or major milestone:
+"Jules, implement the task using all phases of the Elite Engineering SDLC framework.
+Reference: Read mattpocock-skills.md for our engineering standards.
+Alignment: Kick off with a /grill-with-docs session to build our Ubiquitous Language in CONTEXT.md and resolve the decision tree.
+Architecture: Generate an ARCHITECTURE.md with a Mermaid diagram. Use Deep Module principles. If the scoring/logic is complex, use Design It Twice with --parallel 3 to show me options.
+Tracer Bullet: Break the PRD into vertical slices via /to-issues. Implement the first 'end-to-end pipe' immediately.
+Live TDD: Give Playwright videos for all verification. No mocks; use real [Groq/API] calls. Include unit tests, security tests, end-to-end tests, regression tests in red-green testing best-practice
+Accountability: Set up a structured audit log and an ADR for our storage choice.
+Review: Provide a summary of the I/O for each major function and a verification screenshot and video.
+
+
+
+
+
 Directory structure:
 └── mattpocock-skills/
     ├── README.md
