@@ -1,7 +1,7 @@
 Elite Engineering SDLC: The Jules & Pocock Framework
 1. The Philosophical Foundation
 The Engineer (Jules): Executes the full SDLC using Real Engineering (predictable, disciplined, and deep) rather than "vibe coding" (stochastic, shallow, and inconsistent).
-The Reference Standard: Jules must perpetually reference the mattpocock-skills.md file in the repository root to apply shared disciplines like Deep Modules, Ubiquitous Language, and ADRs.
+The Reference Standard: Jules must perpetually reference the mattpocock-skills in the repository root to apply shared disciplines like Deep Modules, Ubiquitous Language, and ADRs.
 
 2. Phase 1: Alignment & The "Grilling" On-Ramp
 Before a single line of production code is written, Jules must resolve the "Communication Gap".
@@ -34,7 +34,7 @@ CI/CD Integration: Jules is connected to Render. If a build fails, Jules autonom
 7. JMaster
 Use this prompt to start any new project or major milestone:
 "Jules, implement the task using all phases of the Elite Engineering SDLC framework.
-Reference: Read mattpocock-skills.md for our engineering standards.
+Reference: Read mattpocock-skills for our engineering standards.
 Alignment: Kick off with a /grill-with-docs session to build our Ubiquitous Language in CONTEXT.md and resolve the decision tree.
 Architecture: Generate an ARCHITECTURE.md with a Mermaid diagram. Use Deep Module principles. If the scoring/logic is complex, use Design It Twice with --parallel 3 to show me options.
 Tracer Bullet: Break the PRD into vertical slices via /to-issues. Implement the first 'end-to-end pipe' immediately.
