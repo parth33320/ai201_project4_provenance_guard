@@ -45,10 +45,10 @@ sequenceDiagram
 
 ## Deep Module: Scoring Engine
 
-The `ScoringEngine` is a deep module that hides the complexity of multi-signal reconciliation.
+The `ScoringEngine` is a deep module that hides the complexity of multi-signal ensemble reconciliation.
 
-- **Interface**: `calculate_score(signals: Dict[str, float]) -> Tuple[str, float, str]`
-- **Implementation**: Implements the "Weighted-Veto" logic where high-confidence human signals can override AI-leaning signals to minimize false positives.
+- **Interface**: `calculate_weighted_veto_score(llm_ai_score, stylo_human_score, burst_score)`
+- **Implementation**: Implements the "Human Defense Veto" logic where high-confidence human markers (Stylometric variability or Paragraph Burstiness) can override AI markers to prevent false positives for human creators. It reduces the final AI confidence score and caps it at 0.3 (Likely Human tier) if human markers exceed a 0.85 threshold.
 
 ## Data Seams
 
