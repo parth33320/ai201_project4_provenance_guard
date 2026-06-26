@@ -55,35 +55,51 @@ def calculate_stylometrics(text):
 def calculate_burstiness(text):
     """
     Stretch Feature: Ensemble Detection (Signal 3)
-    Measures 'Burstiness' - variation in sentence structure (length of clauses).
+    Measures 'Burstiness' - variation in sentence structure (length of clauses)
+    and paragraph-level variation.
     High variation = Human.
     """
+    # 1. Clause-level variation
     clauses = re.split(r'[,;:]', text)
     clause_lengths = [len(c.split()) for c in clauses if len(c.split()) > 0]
+
     if len(clause_lengths) < 2:
-        return 0.5
+        var_clause_score = 0.5
+    else:
+        avg_clause = sum(clause_lengths) / len(clause_lengths)
+        var_clause = sum((x - avg_clause) ** 2 for x in clause_lengths) / len(clause_lengths)
+        var_clause_score = min(var_clause / 30.0, 1.0)
 
-    avg_clause = sum(clause_lengths) / len(clause_lengths)
-    var_clause = sum((x - avg_clause) ** 2 for x in clause_lengths) / len(clause_lengths)
+    # 2. Paragraph-level variation
+    paragraphs = [p.strip() for p in text.split('\n') if p.strip()]
+    paragraph_lengths = [len(p.split()) for p in paragraphs]
 
-    # 0 to 50 variance range
-    return min(var_clause / 30.0, 1.0)
+    if len(paragraph_lengths) < 2:
+        var_para_score = 0.5
+    else:
+        avg_para = sum(paragraph_lengths) / len(paragraph_lengths)
+        var_para = sum((x - avg_para) ** 2 for x in paragraph_lengths) / len(paragraph_lengths)
+        # Normalize variance for paragraphs (higher range usually)
+        var_para_score = min(var_para / 100.0, 1.0)
+
+    # Ensemble of structural variation
+    return (var_clause_score * 0.5) + (var_para_score * 0.5)
 
 def calculate_weighted_veto_score(llm_ai_score, stylo_human_score, burst_score=0.5):
     """
     Implements the "Human Defense Veto" logic.
-    - If Stylometric Human score is very high, it vetos high AI scores.
+    - If either Stylometric or Burstiness Human score is very high, it vetos high AI scores.
     - Final score is 0.0 (Human) to 1.0 (AI).
     """
 
-    # 1. The Veto: If stylometrics are extremely human, push score towards 0
-    if stylo_human_score > 0.85:
-        # High confidence human veto
-        # Even if LLM says 0.8, if stylo is 0.9, we reduce confidence in AI
-        return min(llm_ai_score * (1.0 - stylo_human_score), 0.3) # Force into Human tier
+    # 1. The Veto: If human signals are extremely strong, push score towards 0 (Human tier)
+    # Using relative reduction capped at 0.3
+    if stylo_human_score > 0.85 or burst_score > 0.85:
+        strongest_human_signal = max(stylo_human_score, burst_score)
+        return min(llm_ai_score * (1.0 - strongest_human_signal), 0.3)
 
-    # 2. Conflicting Signals: If LLM says AI but Stylo says Human (but not high enough for veto)
-    if llm_ai_score > 0.7 and stylo_human_score > 0.6:
+    # 2. Conflicting Signals: If LLM says AI but human markers are present
+    if llm_ai_score > 0.7 and (stylo_human_score > 0.6 or burst_score > 0.6):
         # Move towards uncertain
         return 0.5
 

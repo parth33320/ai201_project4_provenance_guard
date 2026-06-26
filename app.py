@@ -154,12 +154,24 @@ def get_dashboard():
             SUM(CASE WHEN attribution = 'likely_ai' THEN 1 ELSE 0 END) as ai_count,
             SUM(CASE WHEN attribution = 'likely_human' THEN 1 ELSE 0 END) as human_count,
             SUM(CASE WHEN attribution = 'uncertain' THEN 1 ELSE 0 END) as uncertain_count,
-            SUM(CASE WHEN status = 'under_review' THEN 1 ELSE 0 END) as appeal_count
+            SUM(CASE WHEN status = 'under_review' THEN 1 ELSE 0 END) as appeal_count,
+            AVG(confidence) as average_confidence
         FROM audit_log
     ''').fetchone()
     conn.close()
 
-    return jsonify(dict(stats))
+    data = dict(stats)
+    total = data['total'] or 0
+    ai_count = data['ai_count'] or 0
+    human_count = data['human_count'] or 0
+    appeal_count = data['appeal_count'] or 0
+
+    # Calculated Analytics (Deep Module behavior)
+    data['appeal_rate'] = round(appeal_count / total, 4) if total > 0 else 0
+    data['ai_to_human_ratio'] = round(ai_count / human_count, 2) if human_count > 0 else (ai_count if ai_count > 0 else 0)
+    data['average_confidence'] = round(data['average_confidence'] or 0, 2)
+
+    return jsonify(data)
 
 @app.route('/log', methods=['GET'])
 def get_log():
