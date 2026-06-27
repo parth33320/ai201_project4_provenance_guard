@@ -105,6 +105,8 @@ def submit():
         "content_id": content_id,
         "attribution": attribution,
         "confidence": round(confidence, 2),
+        "llm_score": round(llm_ai_score, 2),
+        "stylo_score": round(stylo_human_score, 2),
         "label": label
     })
 

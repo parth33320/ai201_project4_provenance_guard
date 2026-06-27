@@ -18,7 +18,8 @@ async def record_scene(browser, url_or_action, scene_num, name):
 
     context = await browser.new_context(
         record_video_dir=video_dir,
-        record_video_size={"width": 1280, "height": 720}
+        record_video_size={"width": 1280, "height": 720},
+        viewport={"width": 1280, "height": 720}
     )
     page = await context.new_page()
 
@@ -47,9 +48,18 @@ async def record_scene(browser, url_or_action, scene_num, name):
     shutil.rmtree(video_dir)
 
 async def main():
+    print("Initializing database...")
+    subprocess.run(["python", "init_db.py"])
+
     print("Starting server...")
     server = subprocess.Popen(["python", "app.py"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     time.sleep(5)
+
+    print("Seeding data...")
+    import requests
+    texts = [RAMEN_REVIEW, MONETARY_POLICY, EDITED_AI, "Another human text example with high variability.", "This is a formal report on the state of the economy."]
+    for i, t in enumerate(texts):
+        requests.post("http://localhost:5000/submit", json={"text": t, "creator_id": f"user{i}"})
 
     try:
         async with async_playwright() as p:
@@ -124,9 +134,12 @@ async def main():
                 await asyncio.sleep(3)
                 await page.evaluate("document.body.innerHTML += '<h1>GET /log</h1>'")
                 resp_log = requests.get("http://localhost:5000/log", headers={"X-Admin-Key": "super-secret-admin-key"})
-                res_log = json.dumps(resp_log.json()[:2], indent=2)
-                await page.evaluate("(res) => { document.body.innerHTML += '<h2>Audit Log (first 2):</h2><pre>' + res + '</pre>'; }", res_log)
-                await asyncio.sleep(4)
+                res_log = json.dumps(resp_log.json(), indent=2)
+                await page.evaluate("(res) => { document.body.innerHTML += '<h2>Audit Log:</h2><pre>' + res + '</pre>'; }", res_log)
+                await asyncio.sleep(2)
+                # Scrolling to reveal more entries
+                await page.mouse.wheel(0, 500)
+                await asyncio.sleep(3)
 
             await record_scene(browser, scene5_action, 5, "Appeals Workflow")
 
@@ -147,7 +160,10 @@ async def main():
                 resp_dash = requests.get("http://localhost:5000/dashboard", headers={"X-Admin-Key": "super-secret-admin-key"})
                 res_dash = json.dumps(resp_dash.json(), indent=2)
                 await page.evaluate("(res) => { document.body.innerHTML += '<h2>Dashboard Metrics:</h2><pre>' + res + '</pre>'; }", res_dash)
-                await asyncio.sleep(4)
+                await asyncio.sleep(2)
+                # Scrolling to reveal more metrics
+                await page.mouse.wheel(0, 500)
+                await asyncio.sleep(3)
 
             await record_scene(browser, scene6_action, 6, "Rate Limiting and Dashboard")
             await browser.close()

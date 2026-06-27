@@ -1,45 +1,20 @@
-from moviepy import VideoFileClip, ColorClip, concatenate_videoclips, ImageClip, CompositeVideoClip
+from moviepy import VideoFileClip, ColorClip, concatenate_videoclips, ImageClip, CompositeVideoClip, TextClip
 import os
-from PIL import Image, ImageDraw, ImageFont
 
 # Attempt to find a font
 FONT_PATH = "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"
 if not os.path.exists(FONT_PATH):
-    FONT_PATH = None
-
-def create_text_image(text, subtext=None, size=(1280, 720), bg=(30, 30, 30), fg=(255, 255, 255), subfg=(200, 200, 0)):
-    img = Image.new('RGB', size, color=bg)
-    draw = ImageDraw.Draw(img)
-
-    try:
-        if FONT_PATH:
-            font = ImageFont.truetype(FONT_PATH, 60)
-            subfont = ImageFont.truetype(FONT_PATH, 40)
-        else:
-            font = ImageFont.load_default()
-            subfont = ImageFont.load_default()
-    except:
-        font = ImageFont.load_default()
-        subfont = ImageFont.load_default()
-
-    # Draw main text
-    draw.text((100, 300), text, fill=fg, font=font)
-
-    # Draw subtext
-    if subtext:
-        draw.text((100, 400), subtext, fill=subfg, font=subfont)
-
-    return img
+    FONT_PATH = "DejaVu-Sans-Bold" # Fallback to name if path fails
 
 def stitch():
     scenes = []
     titles = [
-        "Scene 1: Architecture & Context",
-        "Scene 2: Multi-Signal Submission",
-        "Scene 3: Weighted-Veto Human Defense",
-        "Scene 4: Labels & Uncertainty",
-        "Scene 5: Appeals Workflow",
-        "Scene 6: Rate Limiting & Dashboard"
+        "Architectural Foundations",
+        "Multi-Signal Submission",
+        "Weighted-Veto Human Defense",
+        "Navigating Uncertainty",
+        "Appeals and Transparency",
+        "Production Safety and Analytics"
     ]
 
     overlays_text = {
@@ -60,10 +35,29 @@ def stitch():
         demo_duration = 28.0
 
         # Create title card
-        title_img = create_text_image(titles[i-1], subtext=overlays_text.get(i))
-        title_img_path = f"demo/clips/title_v2_{i}.png"
-        title_img.save(title_img_path)
-        title_card = ImageClip(title_img_path, duration=title_duration)
+        bg_card = ColorClip(size=(1280, 820), color=(30, 30, 30), duration=title_duration)
+
+        main_title = TextClip(
+            text=titles[i-1],
+            font=FONT_PATH,
+            font_size=60,
+            color='white',
+            method='caption',
+            size=(int(1280 * 0.85), None)
+        ).with_duration(title_duration).with_position('center')
+
+        title_card = CompositeVideoClip([bg_card, main_title])
+
+        if i in overlays_text:
+            sub_text = TextClip(
+                text=overlays_text[i],
+                font=FONT_PATH,
+                font_size=40,
+                color='yellow',
+                method='caption',
+                size=(int(1280 * 0.85), None)
+            ).with_duration(title_duration).with_position(('center', 500))
+            title_card = CompositeVideoClip([title_card, sub_text])
 
         # Handle demo clip duration
         if clip.duration > demo_duration:
@@ -73,30 +67,28 @@ def stitch():
             last_frame = clip.subclipped(last_frame_time, clip.duration).with_duration(demo_duration - clip.duration)
             demo_clip = concatenate_videoclips([clip, last_frame])
 
-        # Add technical overlay on the demo clip itself if needed
+        # Create 100px Black Header
+        header = ColorClip(size=(1280, 100), color=(0, 0, 0), duration=demo_duration)
+
+        # Add technical overlay to header if needed
         if i in overlays_text:
-            overlay_img = Image.new('RGBA', (1280, 720), (0, 0, 0, 0))
-            draw = ImageDraw.Draw(overlay_img)
-            try:
-                if FONT_PATH:
-                    font = ImageFont.truetype(FONT_PATH, 40)
-                else:
-                    font = ImageFont.load_default()
-            except:
-                font = ImageFont.load_default()
+            overlay_label = TextClip(
+                text=f"STATUS: {overlays_text[i]}",
+                font=FONT_PATH,
+                font_size=40,
+                color='yellow'
+            ).with_duration(demo_duration).with_position((100, 25))
+            header = CompositeVideoClip([header, overlay_label])
 
-            # Draw semi-transparent background box for overlay
-            text = overlays_text[i]
-            # draw.rectangle([80, 50, 600, 110], fill=(0, 0, 0, 160))
-            draw.text((100, 60), f"STATUS: {text}", fill=(255, 255, 0, 255), font=font)
+        # Stack Header on top of Demo Clip (Total height 820)
+        # Position the demo clip at y=100
+        full_demo_scene = CompositeVideoClip([
+            ColorClip(size=(1280, 820), color=(0,0,0), duration=demo_duration),
+            header.with_position(('center', 'top')),
+            demo_clip.with_position((0, 100))
+        ], size=(1280, 820))
 
-            overlay_path = f"demo/clips/overlay_{i}.png"
-            overlay_img.save(overlay_path)
-            overlay_clip = ImageClip(overlay_path, duration=demo_duration).with_position(("left", "top"))
-
-            demo_clip = CompositeVideoClip([demo_clip, overlay_clip])
-
-        scene = concatenate_videoclips([title_card, demo_clip])
+        scene = concatenate_videoclips([title_card, full_demo_scene])
         scenes.append(scene)
 
     final_video = concatenate_videoclips(scenes)
