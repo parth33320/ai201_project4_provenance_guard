@@ -8,6 +8,7 @@ from dotenv import load_dotenv
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from scoring import calculate_stylometrics, calculate_weighted_veto_score, calculate_burstiness
+from multimodal_scoring import calculate_template_conformity, calculate_descriptive_verbosity
 
 load_dotenv()
 
@@ -84,6 +85,7 @@ def submit():
 
     text = data['text']
     creator_id = data['creator_id']
+    content_type = data.get('content_type', 'text')
     content_id = str(uuid.uuid4())
 
     # Check Verification Status
@@ -91,34 +93,70 @@ def submit():
     verified_status = conn.execute('SELECT status FROM verified_creators WHERE creator_id = ?', (creator_id,)).fetchone()
     is_verified = (verified_status['status'] == 'active') if verified_status else False
 
-    # Milestone 2: Multi-Signal Pipeline
+    multimodal_scores = None
+    stylo_human_score = 0.5
+    burst_score = 0.5
+    template_score = None
+    verbosity_score = None
+
+    # Signal Pipeline
     llm_ai_score = get_llm_score(text)
-    stylo_human_score = calculate_stylometrics(text)
-    burst_score = calculate_burstiness(text)
+
+    if content_type == 'image_description':
+        template_score = calculate_template_conformity(text)
+        verbosity_score = calculate_descriptive_verbosity(text)
+        multimodal_scores = {
+            'template_score': template_score,
+            'verbosity_score': verbosity_score
+        }
+    else:
+        stylo_human_score = calculate_stylometrics(text)
+        burst_score = calculate_burstiness(text)
 
     # Weighted-Veto Scoring Engine
-    confidence = calculate_weighted_veto_score(llm_ai_score, stylo_human_score, burst_score)
+    confidence = calculate_weighted_veto_score(
+        llm_ai_score,
+        stylo_human_score,
+        burst_score,
+        content_type=content_type,
+        multimodal_scores=multimodal_scores
+    )
 
     attribution = "likely_ai" if confidence >= 0.71 else ("likely_human" if confidence <= 0.3 else "uncertain")
     label = get_transparency_label(confidence, is_verified)
 
     # Audit Logging
     conn.execute('''
-        INSERT INTO audit_log (content_id, creator_id, text, attribution, confidence, llm_score, stylo_score, is_verified)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-    ''', (content_id, creator_id, text, attribution, confidence, llm_ai_score, stylo_human_score, 1 if is_verified else 0))
+        INSERT INTO audit_log (
+            content_id, creator_id, text, content_type, attribution, confidence,
+            llm_score, stylo_score, template_score, verbosity_score, is_verified
+        )
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    ''', (
+        content_id, creator_id, text, content_type, attribution, confidence,
+        llm_ai_score, stylo_human_score if content_type == 'text' else None,
+        template_score, verbosity_score, 1 if is_verified else 0
+    ))
     conn.commit()
     conn.close()
 
-    return jsonify({
+    response = {
         "content_id": content_id,
+        "content_type": content_type,
         "attribution": attribution,
         "confidence": round(confidence, 2),
         "llm_score": round(llm_ai_score, 2),
-        "stylo_score": round(stylo_human_score, 2),
         "label": label,
         "provenance_certificate": is_verified
-    })
+    }
+
+    if content_type == 'image_description':
+        response["template_score"] = round(template_score, 2)
+        response["verbosity_score"] = round(verbosity_score, 2)
+    else:
+        response["stylo_score"] = round(stylo_human_score, 2)
+
+    return jsonify(response)
 
 @app.route('/verify', methods=['POST'])
 def verify():

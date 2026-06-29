@@ -85,13 +85,31 @@ def calculate_burstiness(text):
     # Ensemble of structural variation
     return (var_clause_score * 0.5) + (var_para_score * 0.5)
 
-def calculate_weighted_veto_score(llm_ai_score, stylo_human_score, burst_score=0.5):
+def calculate_weighted_veto_score(llm_ai_score, stylo_human_score, burst_score=0.5, content_type='text', multimodal_scores=None):
     """
     Implements the "Human Defense Veto" logic.
+    - Routes scoring based on content_type.
     - If either Stylometric or Burstiness Human score is very high, it vetos high AI scores.
     - Final score is 0.0 (Human) to 1.0 (AI).
     """
+    if content_type == 'image_description' and multimodal_scores:
+        template_score = multimodal_scores.get('template_score', 0.5)
+        verbosity_score = multimodal_scores.get('verbosity_score', 0.5)
 
+        # For Alt-text, we use different weights and signals.
+        # Template conformity is a strong AI marker.
+        # Descriptive verbosity is a secondary marker.
+        # LLM semantic analysis still has the highest weight.
+
+        combined_ai_score = (llm_ai_score * 0.5) + (template_score * 0.3) + (verbosity_score * 0.2)
+
+        # We still respect the LLM if it's very certain about human
+        if llm_ai_score < 0.2:
+            return min(combined_ai_score, 0.3)
+
+        return combined_ai_score
+
+    # Default Text Logic
     # 1. The Veto: If human signals are extremely strong, push score towards 0 (Human tier)
     # Using relative reduction capped at 0.3
     if stylo_human_score > 0.85 or burst_score > 0.85:

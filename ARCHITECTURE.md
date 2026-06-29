@@ -14,11 +14,18 @@ sequenceDiagram
     participant SE as Scoring Engine (Weighted-Veto)
     participant DB as SQLite (Audit Log)
 
-    C->>API: POST /submit (text, creator_id)
+    C->>API: POST /submit (text, content_type, creator_id)
     API->>DB: Check Creator Verification Status
-    API->>P: Analyze Text
-    P->>P: Signal 1 (LLM Semantic)
-    P->>P: Signal 2 (Stylometric Heuristic)
+    alt Content Type is Text
+        API->>P: Analyze Text
+        P->>P: Signal 1 (LLM Semantic)
+        P->>P: Signal 2 (Stylometric Heuristic)
+    else Content Type is Image Description
+        API->>P: Analyze Alt-text
+        P->>P: Signal 3 (LLM Semantic)
+        P->>P: Signal 4 (Template Conformity)
+        P->>P: Signal 5 (Descriptive Verbosity)
+    end
     P-->>API: Signal Scores
     API->>SE: Calculate Combined Score
     SE-->>API: Confidence Score & Label
@@ -81,9 +88,9 @@ The `Provenance Certificate` is included in the `/submit` response as metadata.
 
 ## Deep Module: Scoring Engine
 
-The `ScoringEngine` is a deep module that hides the complexity of multi-signal ensemble reconciliation.
+The `ScoringEngine` is a deep module that hides the complexity of multi-signal ensemble reconciliation and routing.
 
-- **Interface**: `calculate_weighted_veto_score(llm_ai_score, stylo_human_score, burst_score)`
+- **Interface**: `calculate_weighted_veto_score(llm_ai_score, stylo_human_score, burst_score, content_type, multimodal_scores)`
 - **Implementation**: Implements the "Human Defense Veto" logic where high-confidence human markers (Stylometric variability or Paragraph Burstiness) can override AI markers to prevent false positives for human creators. It reduces the final AI confidence score and caps it at 0.3 (Likely Human tier) if human markers exceed a 0.85 threshold.
 
 ## Data Seams

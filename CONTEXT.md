@@ -39,6 +39,15 @@ A creator who has undergone a one-time identity verification process. Their stat
 **Provenance Certificate**:
 A high-trust metadata layer added to a submission from a **Verified Creator**, providing an additional layer of trust beyond automated analysis.
 
+**Image Description (Alt-text)**:
+A short text alternative for images. This is a second content type supported by the system for multi-modal transparency.
+
+**Template Conformity**:
+A detection signal for Image Descriptions that identifies formulaic patterns typical of AI-generated descriptions (e.g., "A photo of...").
+
+**Descriptive Verbosity**:
+A detection signal for Image Descriptions that measures the clinical and overly detailed nature of the text compared to subjective human writing.
+
 ## Relationships
 
 - A **Submission** is analyzed by multiple **Detection Signals**.
