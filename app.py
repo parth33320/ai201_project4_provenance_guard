@@ -59,16 +59,21 @@ def get_llm_score(text):
         print(f"Error calling Groq: {e}")
         return 0.5 # Default to uncertain on error
 
-def get_transparency_label(confidence):
+def get_transparency_label(confidence, is_verified=False):
     """
     Returns the transparency label based on the confidence score.
+    Prefixes with 'Verified Provenance: ' if creator is verified.
     """
     if confidence <= 0.3:
-        return "Human-Authored: This content displays the stylistic variability characteristic of human writing."
+        label = "Human-Authored: This content displays the stylistic variability characteristic of human writing."
     elif confidence >= 0.71:
-        return "AI-Generated: This content matches patterns consistently associated with large language model output."
+        label = "AI-Generated: This content matches patterns consistently associated with large language model output."
     else:
-        return "Attribution Neutral: Our analysis found mixed signals regarding the origin of this content."
+        label = "Attribution Neutral: Our analysis found mixed signals regarding the origin of this content."
+
+    if is_verified:
+        return f"Verified Provenance: {label}"
+    return label
 
 @app.route('/submit', methods=['POST'])
 @limiter.limit("10 per minute")
@@ -81,6 +86,11 @@ def submit():
     creator_id = data['creator_id']
     content_id = str(uuid.uuid4())
 
+    # Check Verification Status
+    conn = get_db_connection()
+    verified_status = conn.execute('SELECT status FROM verified_creators WHERE creator_id = ?', (creator_id,)).fetchone()
+    is_verified = (verified_status['status'] == 'active') if verified_status else False
+
     # Milestone 2: Multi-Signal Pipeline
     llm_ai_score = get_llm_score(text)
     stylo_human_score = calculate_stylometrics(text)
@@ -90,14 +100,13 @@ def submit():
     confidence = calculate_weighted_veto_score(llm_ai_score, stylo_human_score, burst_score)
 
     attribution = "likely_ai" if confidence >= 0.71 else ("likely_human" if confidence <= 0.3 else "uncertain")
-    label = get_transparency_label(confidence)
+    label = get_transparency_label(confidence, is_verified)
 
     # Audit Logging
-    conn = get_db_connection()
     conn.execute('''
-        INSERT INTO audit_log (content_id, creator_id, text, attribution, confidence, llm_score, stylo_score)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
-    ''', (content_id, creator_id, text, attribution, confidence, llm_ai_score, stylo_human_score))
+        INSERT INTO audit_log (content_id, creator_id, text, attribution, confidence, llm_score, stylo_score, is_verified)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    ''', (content_id, creator_id, text, attribution, confidence, llm_ai_score, stylo_human_score, 1 if is_verified else 0))
     conn.commit()
     conn.close()
 
@@ -107,7 +116,39 @@ def submit():
         "confidence": round(confidence, 2),
         "llm_score": round(llm_ai_score, 2),
         "stylo_score": round(stylo_human_score, 2),
-        "label": label
+        "label": label,
+        "provenance_certificate": is_verified
+    })
+
+@app.route('/verify', methods=['POST'])
+def verify():
+    """
+    Verification endpoint for creators.
+    Requires a secret token mimic.
+    """
+    data = request.get_json()
+    if not data or 'creator_id' not in data or 'token' not in data:
+        return jsonify({"error": "Missing creator_id or token"}), 400
+
+    # Secret token check (similar to X-Admin-Key)
+    if data['token'] != 'super-secret-verification-token':
+        return jsonify({"error": "Invalid verification token"}), 401
+
+    creator_id = data['creator_id']
+
+    conn = get_db_connection()
+    conn.execute('''
+        INSERT INTO verified_creators (creator_id, status)
+        VALUES (?, 'active')
+        ON CONFLICT(creator_id) DO UPDATE SET status = 'active'
+    ''', (creator_id,))
+    conn.commit()
+    conn.close()
+
+    return jsonify({
+        "status": "verified",
+        "creator_id": creator_id,
+        "message": "Creator successfully verified for Provenance Certificate."
     })
 
 @app.route('/appeal', methods=['POST'])
@@ -157,6 +198,7 @@ def get_dashboard():
             SUM(CASE WHEN attribution = 'likely_human' THEN 1 ELSE 0 END) as human_count,
             SUM(CASE WHEN attribution = 'uncertain' THEN 1 ELSE 0 END) as uncertain_count,
             SUM(CASE WHEN status = 'under_review' THEN 1 ELSE 0 END) as appeal_count,
+            SUM(CASE WHEN is_verified = 1 THEN 1 ELSE 0 END) as verified_count,
             AVG(confidence) as average_confidence
         FROM audit_log
     ''').fetchone()

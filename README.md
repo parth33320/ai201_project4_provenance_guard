@@ -38,6 +38,15 @@ The scoring engine prioritizes avoiding false positives (labeling humans as AI).
 | **High-Confidence AI** | "AI-Generated: This content matches patterns consistently associated with large language model output." |
 | **Under Review** | "Humanity Verification in Progress (Under Review): A creator has contested the automated label." |
 
+### Provenance Certificate (Verified Creator)
+| Variant | Exact Text |
+| :--- | :--- |
+| **Verified Human** | "Verified Provenance: Human-Authored: This content displays the stylistic variability characteristic of human writing." |
+| **Verified Uncertain** | "Verified Provenance: Attribution Neutral: Our analysis found mixed signals regarding the origin of this content." |
+| **Verified AI** | "Verified Provenance: AI-Generated: This content matches patterns consistently associated with large language model output." |
+
+> **Mockup**: The "Verified Provenance" status is a high-trust credential displayed as a prefix to the standard transparency label. It indicates the creator has undergone a one-time identity verification step.
+
 ## Rate Limiting
 
 - **Limit**: 10 requests per minute per IP.

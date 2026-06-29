@@ -15,15 +15,16 @@ sequenceDiagram
     participant DB as SQLite (Audit Log)
 
     C->>API: POST /submit (text, creator_id)
+    API->>DB: Check Creator Verification Status
     API->>P: Analyze Text
     P->>P: Signal 1 (LLM Semantic)
     P->>P: Signal 2 (Stylometric Heuristic)
     P-->>API: Signal Scores
     API->>SE: Calculate Combined Score
     SE-->>API: Confidence Score & Label
-    API->>DB: Log Submission & Results
+    API->>DB: Log Submission & Results (including is_verified snapshot)
     DB-->>API: content_id
-    API-->>C: JSON (content_id, attribution, confidence, label)
+    API-->>C: JSON (content_id, attribution, confidence, label, provenance_certificate)
 ```
 
 ## Appeal Flow
@@ -41,6 +42,41 @@ sequenceDiagram
     API->>DB: Log Appeal Reasoning
     DB-->>API: Success
     API-->>C: JSON (Status: Under Review)
+```
+
+## Verification Flow
+
+The verification flow allows a creator to earn a 'Verified Provenance' status through a one-time identity verification.
+
+```mermaid
+sequenceDiagram
+    participant C as Creator
+    participant API as Flask API (/verify)
+    participant DB as SQLite (Verified Creators)
+
+    C->>API: POST /verify (creator_id, token)
+    API->>API: Validate Token
+    API->>DB: Store Verified Status
+    DB-->>API: Success
+    API-->>C: JSON (Status: Verified)
+```
+
+## JSON Schema: Provenance Certificate
+
+The `Provenance Certificate` is included in the `/submit` response as metadata.
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "content_id": { "type": "string" },
+    "attribution": { "type": "string" },
+    "confidence": { "type": "number" },
+    "label": { "type": "string" },
+    "provenance_certificate": { "type": "boolean" }
+  },
+  "required": ["content_id", "attribution", "confidence", "label", "provenance_certificate"]
+}
 ```
 
 ## Deep Module: Scoring Engine
