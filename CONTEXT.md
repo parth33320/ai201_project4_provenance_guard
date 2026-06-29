@@ -33,10 +33,17 @@ A structured, append-only record of all submissions, scores, signals, and appeal
 **Weighted-Veto Model**:
 A scoring strategy designed to prioritize avoiding false positives (labeling human work as AI) by allowing high-confidence human signals to override AI signals.
 
+**Verified Creator**:
+A creator who has undergone a one-time identity verification process. Their status is recorded in a persistent registry.
+
+**Provenance Certificate**:
+A high-trust metadata layer added to a submission from a **Verified Creator**, providing an additional layer of trust beyond automated analysis.
+
 ## Relationships
 
 - A **Submission** is analyzed by multiple **Detection Signals**.
 - **Detection Signals** are combined by the **Scoring Engine** to produce a **Confidence Score**.
 - The **Confidence Score** determines which **Transparency Label** is displayed.
 - A **Creator** can file an **Appeal** against a **Submission**'s attribution.
+- A **Verified Creator** receives a **Provenance Certificate** for all their **Submissions**.
 - All actions are recorded in the **Audit Log**.

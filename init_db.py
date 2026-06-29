@@ -16,7 +16,17 @@ def init_db(db_path='provenance_guard.db'):
         llm_score REAL,
         stylo_score REAL,
         status TEXT DEFAULT 'classified',
-        appeal_reasoning TEXT
+        appeal_reasoning TEXT,
+        is_verified INTEGER DEFAULT 0
+    )
+    ''')
+
+    # Verified creators table
+    cursor.execute('''
+    CREATE TABLE IF NOT EXISTS verified_creators (
+        creator_id TEXT PRIMARY KEY,
+        verified_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        status TEXT DEFAULT 'active'
     )
     ''')
 
