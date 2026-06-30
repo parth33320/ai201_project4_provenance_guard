@@ -96,5 +96,13 @@ The `ScoringEngine` is a deep module that hides the complexity of multi-signal e
 ## Data Seams
 
 - **API Seam**: The boundary between the Flask routes and the core logic.
+- **UI Seam**: The boundary between the presentation layer (HTML/Tailwind) and the data aggregation logic in `analytics.py`. This ensures the interface remains a "Deep Module" by hiding complex SQL aggregations behind a simple dictionary response.
 - **Signal Seam**: The boundary between the pipeline and individual detection modules (LLM, Stylometrics).
 - **Storage Seam**: The boundary between the application and the SQLite database.
+
+## Deep Module: Analytics Engine
+
+The `analytics.py` module encapsulates the logic for synthesizing raw audit log entries into high-level platform metrics.
+
+- **Interface**: `get_analytics_summary(db_path)`
+- **Behavior**: Performs multi-row SQL aggregations to calculate the **AI vs. Human Ratio**, **Appeal Rate**, and **Average Confidence Score**. It transforms raw database counts into percentage-based distributions ready for UI rendering.

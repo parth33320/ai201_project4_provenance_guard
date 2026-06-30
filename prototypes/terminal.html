@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en" class="bg-black text-green-500 font-mono">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Provenance Guard | Terminal Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .glow { text-shadow: 0 0 5px #22c55e, 0 0 10px #22c55e; }
+        .border-glow { border: 1px solid #22c55e; box-shadow: 0 0 10px #14532d; }
+    </style>
+</head>
+<body class="p-8">
+    <div class="max-w-6xl mx-auto border-glow p-6 bg-zinc-900">
+        <header class="mb-8 border-b border-green-900 pb-4 flex justify-between items-center">
+            <h1 class="text-3xl font-bold glow uppercase tracking-widest">PROVENANCE_GUARD_v2.0</h1>
+            <div class="text-xs text-green-800">SYSTEM_STATUS: ACTIVE // ADMIN_ACCESS: GRANTED</div>
+        </header>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="border border-green-900 p-4 bg-black">
+                <div class="text-xs uppercase mb-2 text-green-700">AI_HUMAN_RATIO</div>
+                <div class="text-4xl font-bold mb-2">42.5% <span class="text-sm">AI</span></div>
+                <div class="w-full bg-zinc-800 h-2">
+                    <div class="bg-green-500 h-2" style="width: 42.5%"></div>
+                </div>
+            </div>
+            <div class="border border-green-900 p-4 bg-black">
+                <div class="text-xs uppercase mb-2 text-green-700">APPEAL_RATE</div>
+                <div class="text-4xl font-bold mb-2 text-yellow-500">8.2%</div>
+                <div class="text-[10px] text-green-900 mt-2 italic">SIGNAL: ATTRIBUTION_DRIFT_DETECTED</div>
+            </div>
+            <div class="border border-green-900 p-4 bg-black">
+                <div class="text-xs uppercase mb-2 text-green-700">AVG_CONFIDENCE</div>
+                <div class="text-4xl font-bold mb-2">0.88</div>
+                <div class="text-[10px] text-green-900 mt-2">RELIABILITY_INDEX: OPTIMAL</div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div class="border border-green-900 p-4 bg-black">
+                <h2 class="text-xl mb-4 border-b border-green-900 pb-2">_REALTIME_AUDIT_LOG</h2>
+                <div class="space-y-2 text-sm">
+                    <div class="flex justify-between border-b border-green-950 py-1">
+                        <span>CID: 8f2a...</span>
+                        <span class="text-red-500">AI_GENERATED</span>
+                        <span>0.92</span>
+                    </div>
+                    <div class="flex justify-between border-b border-green-950 py-1">
+                        <span>CID: 3d1c...</span>
+                        <span class="text-green-500">HUMAN_AUTH</span>
+                        <span>0.12</span>
+                    </div>
+                    <div class="flex justify-between border-b border-green-950 py-1">
+                        <span>CID: e90b...</span>
+                        <span class="text-yellow-500">UNDER_REVIEW</span>
+                        <span>0.65</span>
+                    </div>
+                </div>
+            </div>
+            <div class="border border-green-900 p-4 bg-black relative overflow-hidden">
+                <h2 class="text-xl mb-4 border-b border-green-900 pb-2">_SIGNAL_HEALTH_MAP</h2>
+                <div class="h-48 flex items-end justify-around gap-2">
+                    <div class="bg-green-900 w-full h-[60%]"></div>
+                    <div class="bg-green-900 w-full h-[80%]"></div>
+                    <div class="bg-green-500 w-full h-[40%] glow"></div>
+                    <div class="bg-green-900 w-full h-[90%]"></div>
+                    <div class="bg-green-900 w-full h-[70%]"></div>
+                </div>
+                <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent pointer-events-none"></div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
