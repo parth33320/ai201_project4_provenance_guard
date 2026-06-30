@@ -56,6 +56,16 @@ The scoring engine prioritizes avoiding false positives (labeling humans as AI).
 
 - **Short Text**: Submissions under 100 words provide insufficient data for stylometric signals, often leading to "Uncertain" classifications.
 - **Highly Edited AI**: Lightly edited AI text can bypass stylometric checks while retaining enough semantic markers to be "Uncertain," which reflects genuine system ambiguity.
+- **Abstract Alt-text**: Extremely short or abstract human-written Alt-text may lack enough subjective markers, potentially being flagged as "Uncertain" if it inadvertently matches a common AI template.
+
+## Multi-Modal Support: Image Descriptions (Alt-text)
+
+Provenance Guard extends its transparency mission to accessibility by supporting **Image Descriptions (Alt-text)**. This allows platforms to verify that descriptive content for images is genuine and high-quality.
+
+### Detection Signals for Alt-text
+1. **Template Conformity**: Detects formulaic patterns typical of AI generators (e.g., starting with "A photo of..." or "An image showing..."). AI often uses clinical, predictable structures for descriptions.
+2. **Descriptive Verbosity**: Measures the "clinical exhaustiveness" of the description. AI-generated Alt-text is often overly detailed and lacks the subjective focus typically found in human-authored descriptions.
+3. **LLM Semantic Analysis**: Real-time evaluation via Groq to identify linguistic patterns specific to AI-generated descriptive content.
 
 ## Spec Reflection
 
