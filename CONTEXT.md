@@ -48,6 +48,18 @@ A detection signal for Image Descriptions that identifies formulaic patterns typ
 **Descriptive Verbosity**:
 A detection signal for Image Descriptions that measures the clinical and overly detailed nature of the text compared to subjective human writing.
 
+**AI vs. Human Ratio**:
+The percentage-based distribution of classifications over a rolling period, used to detect platform-wide pattern shifts.
+
+**Appeal Rate**:
+The ratio of classifications contested by creators; serves as a primary signal for identifying Attribution Drift (false positives).
+
+**Average Confidence Score**:
+The mean certainty level of the Scoring Engine across all submissions, measuring the overall reliability of the current detection pipeline.
+
+**Attribution Drift**:
+A terminology term for when detection signals begin to deviate from historical human benchmarks.
+
 ## Relationships
 
 - A **Submission** is analyzed by multiple **Detection Signals**.

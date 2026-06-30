@@ -117,7 +117,8 @@ def test_system_comprehensive():
         # 4. Dashboard Analytics Verification
         log("\n[4/4] Testing Analytics Dashboard")
         dash_resp = request_context.get("http://127.0.0.1:5000/dashboard", headers={
-            "X-Admin-Key": "super-secret-admin-key"
+            "X-Admin-Key": "super-secret-admin-key",
+            "Accept": "application/json"
         })
         assert dash_resp.status == 200
         stats = dash_resp.json()

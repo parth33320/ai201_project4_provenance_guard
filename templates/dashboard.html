@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en" class="bg-zinc-100 text-zinc-900 font-sans h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Provenance Guard | Enterprise Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="flex h-full">
+    <!-- Sidebar -->
+    <aside class="w-64 bg-zinc-900 text-white flex flex-col">
+        <div class="p-6 border-b border-zinc-800">
+            <h1 class="font-bold text-lg">Provenance Guard</h1>
+            <p class="text-xs text-zinc-500">Enterprise Admin Console</p>
+        </div>
+        <nav class="flex-1 p-4 space-y-2">
+            <a href="/dashboard?admin_key=super-secret-admin-key" class="block p-3 bg-zinc-800 rounded-lg text-sm">Dashboard</a>
+            <a href="/log?admin_key=super-secret-admin-key" class="block p-3 hover:bg-zinc-800 rounded-lg text-sm text-zinc-400">Audit Logs</a>
+            <a href="#" class="block p-3 hover:bg-zinc-800 rounded-lg text-sm text-zinc-400">Verified Creators</a>
+            <a href="#" class="block p-3 hover:bg-zinc-800 rounded-lg text-sm text-zinc-400">Settings</a>
+        </nav>
+        <div class="p-4 border-t border-zinc-800">
+            <div class="text-xs text-zinc-500 mb-2 uppercase font-bold">Signal Health</div>
+            <div class="space-y-3">
+                <div>
+                    <div class="flex justify-between text-[10px] mb-1">
+                        <span>LLM SEMANTIC</span>
+                        <span class="text-emerald-400">STABLE</span>
+                    </div>
+                    <div class="h-1 bg-zinc-800 rounded-full overflow-hidden">
+                        <div class="h-full bg-emerald-500 w-[95%]"></div>
+                    </div>
+                </div>
+                <div>
+                    <div class="flex justify-between text-[10px] mb-1">
+                        <span>STYLOMETRIC</span>
+                        <span class="text-{{ 'emerald' if data.average_confidence > 0.7 else 'yellow' }}-400">
+                            {{ 'STABLE' if data.average_confidence > 0.7 else 'DRIFT_WARNING' }}
+                        </span>
+                    </div>
+                    <div class="h-1 bg-zinc-800 rounded-full overflow-hidden">
+                        <div class="h-full bg-{{ 'emerald' if data.average_confidence > 0.7 else 'yellow' }}-500 w-[{{ (data.average_confidence * 100)|int }}%]"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 overflow-y-auto p-8">
+        <header class="flex justify-between items-center mb-8">
+            <h2 class="text-2xl font-bold">System Analytics</h2>
+            <div class="flex gap-4">
+                <button class="bg-white px-4 py-2 rounded border border-zinc-300 text-sm font-medium">Export CSV</button>
+                <button onclick="window.location.reload()" class="bg-indigo-600 text-white px-4 py-2 rounded text-sm font-medium">Refresh Data</button>
+            </div>
+        </header>
+
+        <!-- KPI Grid -->
+        <div class="grid grid-cols-4 gap-6 mb-8">
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-zinc-200">
+                <p class="text-zinc-500 text-xs font-bold uppercase mb-2">Total Submissions</p>
+                <p class="text-3xl font-bold">{{ data.total }}</p>
+            </div>
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-zinc-200">
+                <p class="text-zinc-500 text-xs font-bold uppercase mb-2">AI Ratio</p>
+                <p class="text-3xl font-bold text-indigo-600">{{ data.ai_percentage }}%</p>
+                <p class="text-[10px] text-zinc-400 mt-1">Platform-wide pattern shift signal</p>
+            </div>
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-zinc-200">
+                <p class="text-zinc-500 text-xs font-bold uppercase mb-2">Appeal Rate</p>
+                <p class="text-3xl font-bold text-orange-600">{{ (data.appeal_rate * 100)|round(1) }}%</p>
+                <p class="text-[10px] text-zinc-400 mt-1">Primary signal for Attribution Drift</p>
+            </div>
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-zinc-200">
+                <p class="text-zinc-500 text-xs font-bold uppercase mb-2">Avg Confidence</p>
+                <p class="text-3xl font-bold text-emerald-600">{{ data.average_confidence }}</p>
+                <p class="text-[10px] text-zinc-400 mt-1">Overall pipeline reliability</p>
+            </div>
+        </div>
+
+        <!-- Data Table -->
+        <div class="bg-white rounded-xl shadow-sm border border-zinc-200 overflow-hidden">
+            <div class="p-6 border-b border-zinc-200 flex justify-between items-center">
+                <h3 class="font-bold">Recent Attribution Events</h3>
+                <input type="text" placeholder="Search content_id..." class="text-sm border border-zinc-300 px-3 py-1.5 rounded-lg w-64">
+            </div>
+            <table class="w-full text-sm text-left">
+                <thead class="bg-zinc-50 text-zinc-500 uppercase text-[10px] font-bold">
+                    <tr>
+                        <th class="px-6 py-4">Content ID</th>
+                        <th class="px-6 py-4">Attribution</th>
+                        <th class="px-6 py-4">Confidence</th>
+                        <th class="px-6 py-4">Status</th>
+                        <th class="px-6 py-4 text-right">Action</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-zinc-100">
+                    {% for log in logs %}
+                    <tr>
+                        <td class="px-6 py-4 font-mono">{{ log.content_id[:12] }}...</td>
+                        <td class="px-6 py-4">
+                            {% if log.attribution == 'likely_ai' %}
+                            <span class="bg-red-100 text-red-700 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase">Likely AI</span>
+                            {% elif log.attribution == 'likely_human' %}
+                            <span class="bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase">Likely Human</span>
+                            {% else %}
+                            <span class="bg-zinc-100 text-zinc-700 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase">Uncertain</span>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4">{{ log.confidence|round(2) }}</td>
+                        <td class="px-6 py-4">
+                            {% if log.status == 'under_review' %}
+                            <span class="text-orange-500 font-bold uppercase text-[10px]">Under Review</span>
+                            {% else %}
+                            <span class="text-zinc-500 uppercase text-[10px]">{{ log.status }}</span>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4 text-right"><button class="text-indigo-600 font-bold">View</button></td>
+                    </tr>
+                    {% endfor %}
+                    {% if not logs %}
+                    <tr>
+                        <td colspan="5" class="px-6 py-8 text-center text-zinc-500 italic">No audit log entries found. Run /submit to generate data.</td>
+                    </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </main>
+</body>
+</html>

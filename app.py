@@ -2,13 +2,14 @@ import os
 import uuid
 import sqlite3
 import json
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template
 from groq import Groq
 from dotenv import load_dotenv
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from scoring import calculate_stylometrics, calculate_weighted_veto_score, calculate_burstiness
 from multimodal_scoring import calculate_template_conformity, calculate_descriptive_verbosity
+from analytics import get_analytics_summary
 
 load_dotenv()
 
@@ -224,36 +225,21 @@ def appeal():
 @app.route('/dashboard', methods=['GET'])
 def get_dashboard():
     # Simulated admin check
-    admin_key = request.headers.get('X-Admin-Key')
+    admin_key = request.headers.get('X-Admin-Key') or request.args.get('admin_key')
     if admin_key != 'super-secret-admin-key':
         return jsonify({"error": "Unauthorized"}), 401
 
+    data = get_analytics_summary(DB_PATH)
+
+    if request.headers.get('Accept') == 'application/json':
+        return jsonify(data)
+
+    # Get recent logs for the table
     conn = get_db_connection()
-    stats = conn.execute('''
-        SELECT
-            COUNT(*) as total,
-            SUM(CASE WHEN attribution = 'likely_ai' THEN 1 ELSE 0 END) as ai_count,
-            SUM(CASE WHEN attribution = 'likely_human' THEN 1 ELSE 0 END) as human_count,
-            SUM(CASE WHEN attribution = 'uncertain' THEN 1 ELSE 0 END) as uncertain_count,
-            SUM(CASE WHEN status = 'under_review' THEN 1 ELSE 0 END) as appeal_count,
-            SUM(CASE WHEN is_verified = 1 THEN 1 ELSE 0 END) as verified_count,
-            AVG(confidence) as average_confidence
-        FROM audit_log
-    ''').fetchone()
+    logs = conn.execute('SELECT * FROM audit_log ORDER BY timestamp DESC LIMIT 10').fetchall()
     conn.close()
 
-    data = dict(stats)
-    total = data['total'] or 0
-    ai_count = data['ai_count'] or 0
-    human_count = data['human_count'] or 0
-    appeal_count = data['appeal_count'] or 0
-
-    # Calculated Analytics (Deep Module behavior)
-    data['appeal_rate'] = round(appeal_count / total, 4) if total > 0 else 0
-    data['ai_to_human_ratio'] = round(ai_count / human_count, 2) if human_count > 0 else (ai_count if ai_count > 0 else 0)
-    data['average_confidence'] = round(data['average_confidence'] or 0, 2)
-
-    return jsonify(data)
+    return render_template('dashboard.html', data=data, logs=[dict(log) for log in logs])
 
 @app.route('/log', methods=['GET'])
 def get_log():

@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en" class="bg-slate-50 text-slate-900 font-sans">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Provenance Guard | Minimalist</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="p-12">
+    <main class="max-w-5xl mx-auto">
+        <header class="mb-16">
+            <p class="text-sm font-semibold text-blue-600 mb-2">Platform Administration</p>
+            <h1 class="text-5xl font-light tracking-tight text-slate-800">Provenance Guard</h1>
+        </header>
+
+        <section class="grid grid-cols-1 md:grid-cols-3 gap-12 mb-20">
+            <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100">
+                <h3 class="text-slate-400 text-sm font-medium mb-1">AI vs Human Ratio</h3>
+                <p class="text-6xl font-light mb-6">1.4:1</p>
+                <div class="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
+                    <div class="h-full bg-blue-500 w-[58%]"></div>
+                </div>
+                <p class="mt-4 text-xs text-slate-400">Shift detected: +4% AI this week</p>
+            </div>
+
+            <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100">
+                <h3 class="text-slate-400 text-sm font-medium mb-1">Appeal Rate</h3>
+                <p class="text-6xl font-light mb-6">4.2%</p>
+                <div class="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
+                    <div class="h-full bg-slate-800 w-[4%]"></div>
+                </div>
+                <p class="mt-4 text-xs text-slate-400">Stable benchmark (Target < 5%)</p>
+            </div>
+
+            <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100">
+                <h3 class="text-slate-400 text-sm font-medium mb-1">Confidence</h3>
+                <p class="text-6xl font-light mb-6">92%</p>
+                <div class="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
+                    <div class="h-full bg-emerald-500 w-[92%]"></div>
+                </div>
+                <p class="mt-4 text-xs text-slate-400">High pipeline reliability</p>
+            </div>
+        </section>
+
+        <section>
+            <h2 class="text-2xl font-light mb-8 text-slate-600">Recent Classifications</h2>
+            <div class="space-y-4">
+                <div class="group flex items-center justify-between p-6 bg-white rounded-2xl border border-slate-50 hover:border-blue-100 transition-all cursor-pointer">
+                    <div class="flex items-center gap-4">
+                        <div class="w-2 h-2 rounded-full bg-blue-500"></div>
+                        <span class="text-slate-400 font-mono text-sm">8f2a7b...</span>
+                    </div>
+                    <span class="text-slate-900 font-medium">AI-Generated</span>
+                    <span class="text-slate-400">92% Confidence</span>
+                </div>
+                <div class="group flex items-center justify-between p-6 bg-white rounded-2xl border border-slate-50 hover:border-blue-100 transition-all cursor-pointer">
+                    <div class="flex items-center gap-4">
+                        <div class="w-2 h-2 rounded-full bg-emerald-500"></div>
+                        <span class="text-slate-400 font-mono text-sm">3d1c4f...</span>
+                    </div>
+                    <span class="text-slate-900 font-medium">Human-Authored</span>
+                    <span class="text-slate-400">88% Confidence</span>
+                </div>
+            </div>
+        </section>
+    </main>
+</body>
+</html>

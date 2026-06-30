@@ -77,6 +77,16 @@ Provenance Guard extends its transparency mission to accessibility by supporting
 1.  **Skeleton Generation**: Used AI to generate the initial Flask app and SQLite table structure based on `ARCHITECTURE.md`. I revised the `audit_log` table to include `stylo_score` and `llm_score` separately for deeper transparency.
 2.  **Scoring Logic**: Used AI to draft the stylometric metric functions. I overrode the weighting (increasing Sentence Length Variance to 40%) after testing revealed it was the most reliable differentiator for human "burstiness."
 
+## Analytics Dashboard (Admin Leverage)
+
+![Dashboard UI](screenshots/dashboard_final.png)
+
+The Provenance Guard dashboard provides platform administrators with high-level **Leverage** to maintain content integrity:
+
+1.  **AI vs. Human Ratio**: Provides leverage for content moderation strategies and resource allocation. It allows admins to detect platform-wide pattern shifts and adjust moderation priorities.
+2.  **Appeal Rate**: Acts as a "Human-in-the-loop" feedback signal. High rates indicate that the **Weighted-Veto** thresholds may be too aggressive, providing the leverage to recalibrate signals and protect genuine human creators.
+3.  **Average Confidence**: Provides leverage by indicating the health of the detection pipeline. A drop in average confidence suggests that the pipeline needs an **Ensemble Detection** upgrade (e.g., adding a third signal) to handle new types of ambiguous content.
+
 ## Setup
 
 1.  Install dependencies: `pip install -r requirements.txt`
